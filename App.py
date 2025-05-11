@@ -28,8 +28,8 @@ def validar_placa(placa, tipo):
         # Placa para carro: tres letras seguidas de tres números (ABC 123)
         patron = r"^[A-Z]{3}\d{3}$"
     elif tipo == "Moto":
-        # Placa para moto: dos letras seguidas de dos números y luego dos letras (AB 12 CD)
-        patron = r"^[A-Z]{2}\d{2}[A-Z]{2}$"
+        # Placa para moto: tres letras, dos números y una letra al final (ABC 12 A)
+        patron = r"^[A-Z]{3}\d{2}[A-Z]{1}$"
     else:
         return False  # Tipo de vehículo no válido
 
