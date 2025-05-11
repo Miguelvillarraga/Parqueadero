@@ -40,14 +40,21 @@ def validar_placa(placa, tipo):
 # Formulario para registrar entrada
 # -------------------------------
 with st.form("form_entrada"):
-    placa = st.text_input("Placa")
+    placa = st.text_input("Placa", key="placa_input")
     tipo = st.selectbox("Tipo de Vehículo", ["Carro", "Moto"])
     usuario = st.text_input("Usuario")
     submit = st.form_submit_button("Registrar Entrada")
 
+    # Validar en tiempo real el formato de la placa
+    if placa:
+        if not validar_placa(placa, tipo):
+            st.error("La placa no es válida para el tipo de vehículo seleccionado.")
+        else:
+            st.success("La placa es válida.")
+
     if submit:
         if placa and usuario:
-            # Validar el formato de la placa
+            # Validar el formato de la placa al momento de registrar la entrada
             if not validar_placa(placa, tipo):
                 st.error("La placa no es válida para el tipo de vehículo seleccionado.")
             else:
