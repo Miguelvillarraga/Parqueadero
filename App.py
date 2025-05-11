@@ -2,20 +2,18 @@ import streamlit as st
 from Database.Models.Vehiculo import Vehiculo
 from Database.Models.Registro import Registro
 from Database.setup import crear_tablas
-from datetime import datetime
+import datetime
 
 # Crear tablas si no existen
 crear_tablas()
 st.title("Gestión de Parqueadero")
 
-# Inicializar variable de control
-if 'recargar' not in st.session_state:
-    st.session_state.recargar = False
-
 # -------------------------------
 # Formulario para registrar entrada
 # -------------------------------
 with st.form("form_entrada"):
+    if 'actualizar' in st.session_state:
+        del st.session_state['actualizar']
     placa = st.text_input("Placa")
     tipo = st.selectbox("Tipo de Vehículo", ["Carro", "Moto"])
     usuario = st.text_input("Usuario")
@@ -26,7 +24,7 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            st.session_state.recargar = True
+            st.experimental_rerun()
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -35,29 +33,14 @@ with st.form("form_entrada"):
 # -------------------------------
 st.subheader("Registros de Vehículos")
 
-# Recargar los datos si es necesario
-if st.session_state.recargar:
-    registros = Registro.obtener_todos()
-    st.session_state.recargar = False
-else:
-    registros = Registro.obtener_todos()
-
-# Función para formatear fechas
-def formatear_fecha(fecha_str):
-    if not fecha_str:
-        return None
-    try:
-        fecha = datetime.fromisoformat(fecha_str)
-        return fecha.strftime("%d/%m/%Y %H:%M")
-    except Exception:
-        return fecha_str  # Si falla, muestra el texto original
+registros = Registro.obtener_todos()  # Debe incluir: id, placa, tipo, hora_entrada, hora_salida
 
 # Cabeceras de tabla
 cab1, cab2, cab3, cab4, cab5, cab6 = st.columns([2, 2, 2, 2, 2, 1])
 cab1.markdown("**Placa**")
 cab2.markdown("**Tipo**")
-cab3.markdown("**Hora Entrada**")
-cab4.markdown("**Hora Salida**")
+cab3.markdown("**Fecha y Hora Entrada**")
+cab4.markdown("**Fecha y Hora Salida**")
 cab5.markdown("**Registrar Salida**")
 cab6.markdown("**Eliminar**")
 
@@ -65,29 +48,33 @@ cab6.markdown("**Eliminar**")
 for reg in registros:
     col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 2, 1])
 
-    placa = reg.get('placa', 'N/A')
-    tipo = reg.get('tipo', 'N/A')
-    entrada = formatear_fecha(reg.get('hora_entrada'))
-    salida = formatear_fecha(reg.get('hora_salida'))
+    col1.write(reg.get('placa', 'N/A'))
+    col2.write(reg.get('tipo', 'N/A'))
 
-    col1.write(placa)
-    col2.write(tipo)
-    col3.write(entrada if entrada else "N/A")
-    col4.write(salida if salida else "🟥 En parqueadero")
+    # Mostrar fecha y hora de entrada
+    if reg.get('fecha_entrada') and reg.get('hora_entrada'):
+        col3.write(f"{reg['fecha_entrada']} {reg['hora_entrada']}")
+    else:
+        col3.write("N/A")
+
+    # Mostrar fecha y hora de salida
+    if reg.get('fecha_salida') and reg.get('hora_salida'):
+        col4.write(f"{reg['fecha_salida']} {reg['hora_salida']}")
+    else:
+        col4.write("🟥 En parqueadero")
 
     # Botón para registrar salida
-    if not reg.get('hora_salida'):
-        if col5.button("Registrar salida", key=f"salida_{reg.get('id')}"):
-            Registro.registrar_salida(reg.get('id'))
-            st.success(f"Salida registrada para {placa}")
-            st.session_state.recargar = True
-            st.rerun()
+    if not reg['hora_salida']:
+        if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
+            Registro.registrar_salida(reg['id'])
+            st.success(f"Salida registrada para {reg['placa']}")
+            st.session_state['actualizar'] = True
+            st.stop()  # Detiene ejecución y reinicia desde arriba (seguro)
     else:
         col5.write("✅")
 
     # Botón para eliminar
-    if col6.button("🗑️", key=f"eliminar_{reg.get('id')}"):
-        Registro.eliminar_registro(reg.get('id'))
-        st.warning(f"Registro de {placa} eliminado.")
-        st.session_state.recargar = True
-        st.rerun()
+    if col6.button("🗑️", key=f"eliminar_{reg['id']}"):
+        Registro.eliminar_registro(reg['id'])
+        st.warning(f"Registro de {reg['placa']} eliminado.")
+        st.experimental_rerun()
