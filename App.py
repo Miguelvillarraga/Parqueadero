@@ -12,6 +12,8 @@ st.title("Gestión de Parqueadero")
 # Formulario para registrar entrada
 # -------------------------------
 with st.form("form_entrada"):
+    if 'actualizar' in st.session_state:
+        del st.session_state['actualizar']
     placa = st.text_input("Placa")
     tipo = st.selectbox("Tipo de Vehículo", ["Carro", "Moto"])
     usuario = st.text_input("Usuario")
