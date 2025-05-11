@@ -52,11 +52,12 @@ for reg in registros:
     col4.write(reg['hora_salida'] if reg.get('hora_salida') else "🟥 En parqueadero")
 
     # Botón para registrar salida
-    if not reg.get('hora_salida'):
-        if col5.button("Salida", key=f"salida_{reg['id']}"):
+    if not reg['hora_salida']:
+        if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
             Registro.registrar_salida(reg['id'])
             st.success(f"Salida registrada para {reg['placa']}")
-            st.experimental_rerun()
+            st.session_state['actualizar'] = True
+            st.stop()  # Detiene ejecución y reinicia desde arriba (seguro)
     else:
         col5.write("✅")
 
