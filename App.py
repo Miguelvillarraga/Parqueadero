@@ -1,7 +1,10 @@
 import streamlit as st
 from Database.Models.Vehiculo import Vehiculo
 from Database.Models.Registro import Registro
+from Database.setup import crear_tablas
 
+
+crear_tablas()
 st.title("Gestión de Parqueadero")
 
 placa = st.text_input("Placa")
