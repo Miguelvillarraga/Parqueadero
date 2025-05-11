@@ -8,12 +8,14 @@ import datetime
 crear_tablas()
 st.title("Gestión de Parqueadero")
 
+# Limpiar estado de actualización
+if 'actualizar' in st.session_state:
+    del st.session_state['actualizar']
+
 # -------------------------------
 # Formulario para registrar entrada
 # -------------------------------
 with st.form("form_entrada"):
-    if 'actualizar' in st.session_state:
-        del st.session_state['actualizar']
     placa = st.text_input("Placa")
     tipo = st.selectbox("Tipo de Vehículo", ["Carro", "Moto"])
     usuario = st.text_input("Usuario")
@@ -24,7 +26,8 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            st.experimental_rerun()
+            st.session_state['actualizar'] = True
+            st.stop()
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -48,23 +51,30 @@ cab6.markdown("**Eliminar**")
 for reg in registros:
     col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 2, 1])
 
-    col1.write(reg.get('placa', 'N/A'))
-    col2.write(reg.get('tipo', 'N/A'))
-    col3.write(reg.get('hora_entrada', 'N/A'))
-    col4.write(reg['hora_salida'] if reg.get('hora_salida') else "🟥 En parqueadero")
+    # Acceder con .get para evitar KeyError
+    placa = reg.get('placa', 'N/A')
+    tipo = reg.get('tipo', 'N/A')
+    hora_entrada = reg.get('hora_entrada', 'N/A')
+    hora_salida = reg.get('hora_salida', '')
+
+    col1.write(placa)
+    col2.write(tipo)
+    col3.write(hora_entrada)
+    col4.write(hora_salida if hora_salida else "🟥 En parqueadero")
 
     # Botón para registrar salida
-    if not reg['hora_salida']:
-        if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
-            Registro.registrar_salida(reg['id'])
-            st.success(f"Salida registrada para {reg['placa']}")
+    if not hora_salida:
+        if col5.button("Registrar salida", key=f"salida_{reg.get('id')}"):
+            Registro.registrar_salida(reg.get('id'))
+            st.success(f"Salida registrada para {placa}")
             st.session_state['actualizar'] = True
-            st.stop()  # Detiene ejecución y reinicia desde arriba (seguro)
+            st.stop()
     else:
         col5.write("✅")
 
     # Botón para eliminar
-    if col6.button("🗑️", key=f"eliminar_{reg['id']}"):
-        Registro.eliminar_registro(reg['id'])
-        st.warning(f"Registro de {reg['placa']} eliminado.")
-        st.experimental_rerun()
+    if col6.button("🗑️", key=f"eliminar_{reg.get('id')}"):
+        Registro.eliminar_registro(reg.get('id'))
+        st.warning(f"Registro de {placa} eliminado.")
+        st.session_state['actualizar'] = True
+        st.stop()
