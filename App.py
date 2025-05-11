@@ -37,7 +37,7 @@ st.subheader("Registros de Vehículos")
 # Recargar los datos si es necesario
 if st.session_state.recargar:
     registros = Registro.obtener_todos()
-    st.session_state.recargar = False  # Ya recargado
+    st.session_state.recargar = False
 else:
     registros = Registro.obtener_todos()
 
@@ -70,8 +70,8 @@ for reg in registros:
             Registro.registrar_salida(reg.get('id'))
             st.success(f"Salida registrada para {placa}")
             st.session_state.recargar = True
-            st.experimental_set_query_params(**st.experimental_get_query_params())  # Truco para forzar recarga sin error
-            st.stop()  # Para evitar ejecución doble
+            st.query_params.update(st.query_params)  # Forzar recarga visual sin error
+            st.stop()
     else:
         col5.write("✅")
 
@@ -80,5 +80,5 @@ for reg in registros:
         Registro.eliminar_registro(reg.get('id'))
         st.warning(f"Registro de {placa} eliminado.")
         st.session_state.recargar = True
-        st.experimental_set_query_params(**st.experimental_get_query_params())
+        st.query_params.update(st.query_params)
         st.stop()
