@@ -11,12 +11,13 @@ st.title("Gestión de Parqueadero")
 # -------------------------------
 # Cargar registros desde la base de datos
 # -------------------------------
+@st.experimental_memo(ttl=60)  # Cache de 1 minuto para optimizar la carga de registros
 def cargar_registros():
     registros = Registro.obtener_todos()  # Obtener registros actualizados
-    st.session_state.registros = registros  # Guardar los registros en session_state
+    return registros
 
-if 'registros' not in st.session_state:
-    cargar_registros()  # Cargar los registros si no están en la sesión
+# Cargar registros iniciales
+registros = cargar_registros()
 
 # -------------------------------
 # Formulario para registrar entrada
@@ -32,7 +33,7 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            cargar_registros()  # Recargar los registros
+            registros = cargar_registros()  # Recargar registros
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -51,7 +52,7 @@ cab5.markdown("**Registrar Salida**")
 cab6.markdown("**Eliminar**")
 
 # Filas de registros
-for reg in st.session_state.registros:
+for reg in registros:
     col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 2, 1])
 
     col1.write(reg.get('placa', 'N/A'))
@@ -74,7 +75,7 @@ for reg in st.session_state.registros:
         if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
             Registro.registrar_salida(reg['id'])
             st.success(f"Salida registrada para {reg['placa']}")
-            cargar_registros()  # Recargar los registros
+            registros = cargar_registros()  # Recargar los registros
     else:
         col5.write("✅")
 
@@ -82,4 +83,4 @@ for reg in st.session_state.registros:
     if col6.button("🗑️", key=f"eliminar_{reg['id']}"):
         Registro.eliminar_registro(reg['id'])
         st.warning(f"Registro de {reg['placa']} eliminado.")
-        cargar_registros()  # Recargar los registros
+        registros = cargar_registros()  # Recargar los registros
