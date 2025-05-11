@@ -8,9 +8,9 @@ class Registro:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT Vehiculo.Placa, Vehiculo.Tipo, Vehiculo.Usuario, Registro.Fecha_Entrada, Registro.Hora_Entrada, Registro.Fecha_Salida,  Registro.Hora_Salida
+            SELECT Vehiculo.Placa, Vehiculo.Tipo, Vehiculo.Usuario, Registro.Fecha_Entrada, Registro.Hora_Entrada, Registro.Fecha_Salida, Registro.Hora_Salida
             FROM Registro
-            JOIN Vehiculo ON Registro.Placa = Vehiculo.Placa
+            JOIN Vehiculo ON Registro.Placa_Vehiculo = Vehiculo.Placa
             ORDER BY Registro.Hora_Entrada DESC
         """)
         rows = cursor.fetchall()
@@ -38,7 +38,7 @@ class Registro:
         cursor.execute("""
             UPDATE Registro 
             SET Fecha_Salida = ?, Hora_Salida = ? 
-            WHERE id = ?
+            WHERE ID_Registro = ?
         """, (now.split()[0], now.split()[1], id_registro))
         
         conn.commit()
@@ -50,7 +50,7 @@ class Registro:
         cursor = conn.cursor()
         
         # Eliminar el registro de la tabla Registro
-        cursor.execute("DELETE FROM Registro WHERE id = ?", (id_registro,))
+        cursor.execute("DELETE FROM Registro WHERE ID_Registro = ?", (id_registro,))
         
         conn.commit()
         conn.close()
