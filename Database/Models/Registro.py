@@ -1,5 +1,5 @@
 import sqlite3
-from ..Connetion import get_connection
+from ..Connection import get_connection
 import datetime
 
 class Registro:
