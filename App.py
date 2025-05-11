@@ -2,11 +2,14 @@ import streamlit as st
 from Database.Models.Vehiculo import Vehiculo
 from Database.Models.Registro import Registro
 from Database.setup import crear_tablas
-import datetime
 
 # Crear tablas si no existen
 crear_tablas()
 st.title("Gestión de Parqueadero")
+
+# Inicializar variable de control
+if 'recargar' not in st.session_state:
+    st.session_state.recargar = False
 
 # -------------------------------
 # Formulario para registrar entrada
@@ -22,7 +25,7 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            st.experimental_rerun()  # Reinicia para mostrar en tabla
+            st.session_state.recargar = True
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -31,7 +34,12 @@ with st.form("form_entrada"):
 # -------------------------------
 st.subheader("Registros de Vehículos")
 
-registros = Registro.obtener_todos()  # Debe incluir: id, placa, tipo, hora_entrada, hora_salida
+# Recargar los datos si es necesario
+if st.session_state.recargar:
+    registros = Registro.obtener_todos()
+    st.session_state.recargar = False  # Ya recargado
+else:
+    registros = Registro.obtener_todos()
 
 # Cabeceras de tabla
 cab1, cab2, cab3, cab4, cab5, cab6 = st.columns([2, 2, 2, 2, 2, 1])
@@ -61,7 +69,9 @@ for reg in registros:
         if col5.button("Registrar salida", key=f"salida_{reg.get('id')}"):
             Registro.registrar_salida(reg.get('id'))
             st.success(f"Salida registrada para {placa}")
-            st.experimental_rerun()  # Ahora sí se actualiza la tabla
+            st.session_state.recargar = True
+            st.experimental_set_query_params(**st.experimental_get_query_params())  # Truco para forzar recarga sin error
+            st.stop()  # Para evitar ejecución doble
     else:
         col5.write("✅")
 
@@ -69,4 +79,6 @@ for reg in registros:
     if col6.button("🗑️", key=f"eliminar_{reg.get('id')}"):
         Registro.eliminar_registro(reg.get('id'))
         st.warning(f"Registro de {placa} eliminado.")
-        st.experimental_rerun()
+        st.session_state.recargar = True
+        st.experimental_set_query_params(**st.experimental_get_query_params())
+        st.stop()
