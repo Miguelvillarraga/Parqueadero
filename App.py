@@ -22,8 +22,7 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            # Recargar la lista de registros después de registrar una entrada
-            st.session_state['actualizar'] = True
+            st.experimental_rerun()  # Forzar la actualización de la página
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -32,16 +31,7 @@ with st.form("form_entrada"):
 # -------------------------------
 st.subheader("Registros de Vehículos")
 
-# Verifica si se debe actualizar la lista de registros
-if 'actualizar' not in st.session_state:
-    st.session_state['actualizar'] = False
-
-# Cargar registros solo si la bandera de actualización está activada
-if st.session_state['actualizar']:
-    registros = Registro.obtener_todos()  # Obtener registros actualizados
-    st.session_state['actualizar'] = False  # Desactivar el flag de actualización
-else:
-    registros = Registro.obtener_todos()  # Obtener registros al iniciar
+registros = Registro.obtener_todos()  # Obtener registros actualizados
 
 # Cabeceras de tabla
 cab1, cab2, cab3, cab4, cab5, cab6 = st.columns([2, 2, 2, 2, 2, 1])
@@ -76,7 +66,7 @@ for reg in registros:
         if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
             Registro.registrar_salida(reg['id'])
             st.success(f"Salida registrada para {reg['placa']}")
-            st.session_state['actualizar'] = True  # Activar actualización para recargar los registros
+            st.experimental_rerun()  # Forzar la actualización de la página
     else:
         col5.write("✅")
 
@@ -84,4 +74,4 @@ for reg in registros:
     if col6.button("🗑️", key=f"eliminar_{reg['id']}"):
         Registro.eliminar_registro(reg['id'])
         st.warning(f"Registro de {reg['placa']} eliminado.")
-        st.session_state['actualizar'] = True  # Activar actualización para recargar los registros
+        st.experimental_rerun()  # Forzar la actualización de la página
