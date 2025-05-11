@@ -2,6 +2,7 @@ import streamlit as st
 from Database.Models.Vehiculo import Vehiculo
 from Database.Models.Registro import Registro
 from Database.setup import crear_tablas
+from datetime import datetime
 
 # Crear tablas si no existen
 crear_tablas()
@@ -41,6 +42,16 @@ if st.session_state.recargar:
 else:
     registros = Registro.obtener_todos()
 
+# Función para formatear fechas
+def formatear_fecha(fecha_str):
+    if not fecha_str:
+        return None
+    try:
+        fecha = datetime.fromisoformat(fecha_str)
+        return fecha.strftime("%d/%m/%Y %H:%M")
+    except Exception:
+        return fecha_str  # Si falla, muestra el texto original
+
 # Cabeceras de tabla
 cab1, cab2, cab3, cab4, cab5, cab6 = st.columns([2, 2, 2, 2, 2, 1])
 cab1.markdown("**Placa**")
@@ -56,22 +67,21 @@ for reg in registros:
 
     placa = reg.get('placa', 'N/A')
     tipo = reg.get('tipo', 'N/A')
-    hora_entrada = reg.get('hora_entrada', 'N/A')
-    hora_salida = reg.get('hora_salida', '')
+    entrada = formatear_fecha(reg.get('hora_entrada'))
+    salida = formatear_fecha(reg.get('hora_salida'))
 
     col1.write(placa)
     col2.write(tipo)
-    col3.write(hora_entrada)
-    col4.write(hora_salida if hora_salida else "🟥 En parqueadero")
+    col3.write(entrada if entrada else "N/A")
+    col4.write(salida if salida else "🟥 En parqueadero")
 
     # Botón para registrar salida
-    if not hora_salida:
+    if not reg.get('hora_salida'):
         if col5.button("Registrar salida", key=f"salida_{reg.get('id')}"):
             Registro.registrar_salida(reg.get('id'))
             st.success(f"Salida registrada para {placa}")
             st.session_state.recargar = True
-            st.query_params.update(st.query_params)  # Forzar recarga visual sin error
-            st.stop()
+            st.rerun()
     else:
         col5.write("✅")
 
@@ -80,5 +90,4 @@ for reg in registros:
         Registro.eliminar_registro(reg.get('id'))
         st.warning(f"Registro de {placa} eliminado.")
         st.session_state.recargar = True
-        st.query_params.update(st.query_params)
-        st.stop()
+        st.rerun()
