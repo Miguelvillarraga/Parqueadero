@@ -22,7 +22,6 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            # Limpiar campos: esto se logra indirectamente porque el formulario se reinicia en Streamlit
             st.experimental_rerun()
         else:
             st.warning("Por favor, complete todos los campos.")
@@ -32,24 +31,37 @@ with st.form("form_entrada"):
 # -------------------------------
 st.subheader("Registros de Vehículos")
 
-registros = Registro.obtener_todos()  # Suponiendo que esta función retorna lista de dicts o tuplas
+registros = Registro.obtener_todos()  # Debe incluir: id, placa, tipo, hora_entrada, hora_salida
 
+# Cabeceras de tabla
+cab1, cab2, cab3, cab4, cab5, cab6 = st.columns([2, 2, 2, 2, 2, 1])
+cab1.markdown("**Placa**")
+cab2.markdown("**Tipo**")
+cab3.markdown("**Hora Entrada**")
+cab4.markdown("**Hora Salida**")
+cab5.markdown("**Registrar Salida**")
+cab6.markdown("**Eliminar**")
+
+# Filas de registros
 for reg in registros:
-    col1, col2, col3, col4, col5 = st.columns([2, 2, 3, 3, 2])
-    col1.write(reg['placa'])
-    col2.write(reg['tipo'])
-    col3.write(reg['hora_entrada'])
-    col4.write(reg['hora_salida'] if reg['hora_salida'] else "🟥 En parqueadero")
+    col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 2, 1])
+
+    col1.write(reg.get('placa', 'N/A'))
+    col2.write(reg.get('tipo', 'N/A'))
+    col3.write(reg.get('hora_entrada', 'N/A'))
+    col4.write(reg['hora_salida'] if reg.get('hora_salida') else "🟥 En parqueadero")
 
     # Botón para registrar salida
-    if not reg['hora_salida']:
-        if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
+    if not reg.get('hora_salida'):
+        if col5.button("Salida", key=f"salida_{reg['id']}"):
             Registro.registrar_salida(reg['id'])
             st.success(f"Salida registrada para {reg['placa']}")
             st.experimental_rerun()
+    else:
+        col5.write("✅")
 
     # Botón para eliminar
-    if st.button(f"🗑️ Eliminar {reg['placa']}", key=f"eliminar_{reg['id']}"):
+    if col6.button("🗑️", key=f"eliminar_{reg['id']}"):
         Registro.eliminar_registro(reg['id'])
         st.warning(f"Registro de {reg['placa']} eliminado.")
         st.experimental_rerun()
