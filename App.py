@@ -1,3 +1,4 @@
+import re
 import streamlit as st
 from Database.Models.Vehiculo import Vehiculo
 from Database.Models.Registro import Registro
@@ -16,6 +17,26 @@ def cargar_registros():
     return registros
 
 # -------------------------------
+# Validar formato de placa
+# -------------------------------
+def validar_placa(placa, tipo):
+    # Eliminar espacios y convertir a mayúsculas
+    placa = placa.replace(" ", "").upper()
+    
+    # Expresiones regulares para validar las placas
+    if tipo == "Carro":
+        # Placa para carro: tres letras seguidas de tres números (ABC 123)
+        patron = r"^[A-Z]{3}\d{3}$"
+    elif tipo == "Moto":
+        # Placa para moto: dos letras seguidas de dos números y luego dos letras (AB 12 CD)
+        patron = r"^[A-Z]{2}\d{2}[A-Z]{2}$"
+    else:
+        return False  # Tipo de vehículo no válido
+
+    # Validar la placa con el patrón
+    return bool(re.match(patron, placa))
+
+# -------------------------------
 # Formulario para registrar entrada
 # -------------------------------
 with st.form("form_entrada"):
@@ -26,9 +47,13 @@ with st.form("form_entrada"):
 
     if submit:
         if placa and usuario:
-            v = Vehiculo(placa, tipo, usuario)
-            v.registrar_entrada()
-            st.success("Entrada registrada exitosamente.")
+            # Validar el formato de la placa
+            if not validar_placa(placa, tipo):
+                st.error("La placa no es válida para el tipo de vehículo seleccionado.")
+            else:
+                v = Vehiculo(placa, tipo, usuario)
+                v.registrar_entrada()
+                st.success("Entrada registrada exitosamente.")
         else:
             st.warning("Por favor, complete todos los campos.")
 
