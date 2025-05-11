@@ -1,16 +1,27 @@
 import sqlite3
 
-def crear_tablas():
-    conn = sqlite3.connect("parqueadero.db")
-    cursor = conn.cursor()
+conn = sqlite3.connect("parqueadero.db")
+cursor = conn.cursor()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS Vehiculo (
-            Placa TEXT PRIMARY KEY,
-            Tipo TEXT,
-            Usuario TEXT
-        );
-    """)
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Vehiculo (
+    Placa TEXT PRIMARY KEY,
+    Tipo TEXT NOT NULL,
+    Usuario TEXT NOT NULL
+)
+""")
 
-    conn.commit()
-    conn.close()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS Registro (
+    ID_Registro INTEGER PRIMARY KEY AUTOINCREMENT,
+    Placa_Vehiculo TEXT NOT NULL,
+    Fecha_Entrada DATE NOT NULL,
+    Hora_Entrada TIME NOT NULL,
+    Fecha_Salida DATE,
+    Hora_Salida TIME,
+    FOREIGN KEY (Placa_Vehiculo) REFERENCES Vehiculo(Placa)
+)
+""")
+
+conn.commit()
+conn.close()
