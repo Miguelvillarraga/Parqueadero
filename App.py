@@ -9,6 +9,16 @@ crear_tablas()
 st.title("Gestión de Parqueadero")
 
 # -------------------------------
+# Cargar registros desde la base de datos
+# -------------------------------
+def cargar_registros():
+    registros = Registro.obtener_todos()  # Obtener registros actualizados
+    st.session_state.registros = registros  # Guardar los registros en session_state
+
+if 'registros' not in st.session_state:
+    cargar_registros()  # Cargar los registros si no están en la sesión
+
+# -------------------------------
 # Formulario para registrar entrada
 # -------------------------------
 with st.form("form_entrada"):
@@ -22,7 +32,7 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            st.experimental_rerun()  # Forzar la actualización de la página
+            cargar_registros()  # Recargar los registros
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -30,8 +40,6 @@ with st.form("form_entrada"):
 # Mostrar registros actuales
 # -------------------------------
 st.subheader("Registros de Vehículos")
-
-registros = Registro.obtener_todos()  # Obtener registros actualizados
 
 # Cabeceras de tabla
 cab1, cab2, cab3, cab4, cab5, cab6 = st.columns([2, 2, 2, 2, 2, 1])
@@ -43,7 +51,7 @@ cab5.markdown("**Registrar Salida**")
 cab6.markdown("**Eliminar**")
 
 # Filas de registros
-for reg in registros:
+for reg in st.session_state.registros:
     col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 2, 1])
 
     col1.write(reg.get('placa', 'N/A'))
@@ -66,7 +74,7 @@ for reg in registros:
         if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
             Registro.registrar_salida(reg['id'])
             st.success(f"Salida registrada para {reg['placa']}")
-            st.experimental_rerun()  # Forzar la actualización de la página
+            cargar_registros()  # Recargar los registros
     else:
         col5.write("✅")
 
@@ -74,4 +82,4 @@ for reg in registros:
     if col6.button("🗑️", key=f"eliminar_{reg['id']}"):
         Registro.eliminar_registro(reg['id'])
         st.warning(f"Registro de {reg['placa']} eliminado.")
-        st.experimental_rerun()  # Forzar la actualización de la página
+        cargar_registros()  # Recargar los registros
