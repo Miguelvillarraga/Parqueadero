@@ -12,8 +12,9 @@ st.title("Gestión de Parqueadero")
 # Formulario para registrar entrada
 # -------------------------------
 with st.form("form_entrada"):
-    if 'actualizar' in st.session_state:
-        del st.session_state['actualizar']
+    if 'actualizar' not in st.session_state:
+        st.session_state['actualizar'] = False
+
     placa = st.text_input("Placa")
     tipo = st.selectbox("Tipo de Vehículo", ["Carro", "Moto"])
     usuario = st.text_input("Usuario")
@@ -24,9 +25,7 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            # Usamos st.session_state para marcar que debe actualizarse
             st.session_state['actualizar'] = True
-            st.experimental_rerun()  # Reintenta desde el inicio
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -35,11 +34,13 @@ with st.form("form_entrada"):
 # -------------------------------
 st.subheader("Registros de Vehículos")
 
-# Comprobamos si se necesita actualizar
-if 'actualizar' in st.session_state and st.session_state['actualizar']:
-    registros = Registro.obtener_todos()  # Debe incluir: id, placa, tipo, hora_entrada, hora_salida
+# Solo actualizar registros si se marca 'actualizar' como True
+if st.session_state['actualizar']:
+    registros = Registro.obtener_todos()  # Obtiene registros actualizados
+    st.session_state['actualizar'] = False  # Resetear el flag
+
 else:
-    registros = []
+    registros = Registro.obtener_todos()  # Obtiene registros iniciales
 
 # Cabeceras de tabla
 cab1, cab2, cab3, cab4, cab5, cab6 = st.columns([2, 2, 2, 2, 2, 1])
@@ -74,9 +75,7 @@ for reg in registros:
         if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
             Registro.registrar_salida(reg['id'])
             st.success(f"Salida registrada para {reg['placa']}")
-            # Marcamos que se debe actualizar la tabla
-            st.session_state['actualizar'] = True
-            st.experimental_rerun()  # Reintenta desde el inicio
+            st.session_state['actualizar'] = True  # Activar actualización
     else:
         col5.write("✅")
 
@@ -84,6 +83,4 @@ for reg in registros:
     if col6.button("🗑️", key=f"eliminar_{reg['id']}"):
         Registro.eliminar_registro(reg['id'])
         st.warning(f"Registro de {reg['placa']} eliminado.")
-        # Marcamos que se debe actualizar la tabla
-        st.session_state['actualizar'] = True
-        st.experimental_rerun()  # Reintenta desde el inicio
+        st.session_state['actualizar'] = True  # Activar actualización
