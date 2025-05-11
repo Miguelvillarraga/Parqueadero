@@ -11,7 +11,7 @@ class Registro:
             SELECT Vehiculo.Placa, Vehiculo.Tipo, Vehiculo.Usuario, Registro.Fecha_Entrada, Registro.Hora_Entrada, Registro.Fecha_Salida,  Registro.Hora_Salida
             FROM Registro
             JOIN Vehiculo ON Registro.Placa = Vehiculo.Placa
-            ORDER BY Registro.HoraEntrada DESC
+            ORDER BY Registro.Hora_Entrada DESC
         """)
         rows = cursor.fetchall()
         conn.close()
@@ -28,13 +28,19 @@ class Registro:
             for row in rows
         ]
 
-
     @staticmethod
     def registrar_salida(id_registro):
         conn = get_connection()
         cursor = conn.cursor()
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cursor.execute("UPDATE Vehiculo SET hora_salida = ? WHERE id = ?", (now, id_registro))
+        
+        # Actualizar la hora de salida en la tabla Registro
+        cursor.execute("""
+            UPDATE Registro 
+            SET Fecha_Salida = ?, Hora_Salida = ? 
+            WHERE id = ?
+        """, (now.split()[0], now.split()[1], id_registro))
+        
         conn.commit()
         conn.close()
 
@@ -42,6 +48,9 @@ class Registro:
     def eliminar_registro(id_registro):
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM Vehiculo WHERE id = ?", (id_registro,))
+        
+        # Eliminar el registro de la tabla Registro
+        cursor.execute("DELETE FROM Registro WHERE id = ?", (id_registro,))
+        
         conn.commit()
         conn.close()
