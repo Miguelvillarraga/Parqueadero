@@ -1,45 +1,40 @@
-from ..Connection import get_connection
-from datetime import datetime
+import sqlite3
+from Database.config import get_connection
+import datetime
 
 class Registro:
     @staticmethod
-    def registrar_salida(placa):
+    def obtener_todos():
         conn = get_connection()
         cursor = conn.cursor()
-        ahora = datetime.now()
-        fecha = ahora.date().isoformat()
-        hora = ahora.time().strftime('%H:%M:%S')
+        cursor.execute("SELECT id, placa, tipo, usuario, hora_entrada, hora_salida FROM Vehiculo ORDER BY hora_entrada DESC")
+        rows = cursor.fetchall()
+        conn.close()
+        return [
+            {
+                'id': row[0],
+                'placa': row[1],
+                'tipo': row[2],
+                'usuario': row[3],
+                'hora_entrada': row[4],
+                'hora_salida': row[5]
+            }
+            for row in rows
+        ]
 
-        cursor.execute("""
-            UPDATE Registro
-            SET Fecha_Salida = ?, Hora_Salida = ?
-            WHERE Placa_Vehiculo = ? AND Fecha_Salida IS NULL
-        """, (fecha, hora, placa))
+    @staticmethod
+    def registrar_salida(id_registro):
+        conn = get_connection()
+        cursor = conn.cursor()
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cursor.execute("UPDATE Vehiculo SET hora_salida = ? WHERE id = ?", (now, id_registro))
         conn.commit()
         conn.close()
 
     @staticmethod
-    def historial_por_vehiculo(placa):
+    def eliminar_registro(id_registro):
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT Fecha_Entrada, Hora_Entrada, Fecha_Salida, Hora_Salida
-            FROM Registro
-            WHERE Placa_Vehiculo = ?
-            ORDER BY ID_Registro DESC
-        """, (placa,))
-        registros = cursor.fetchall()
+        cursor.execute("DELETE FROM Vehiculo WHERE id = ?", (id_registro,))
+        conn.commit()
         conn.close()
-        return registros
-
-    @staticmethod
-    def esta_dentro(placa):
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT COUNT(*) FROM Registro
-            WHERE Placa_Vehiculo = ? AND Fecha_Salida IS NULL
-        """, (placa,))
-        count = cursor.fetchone()[0]
-        conn.close()
-        return count > 0
