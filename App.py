@@ -19,25 +19,16 @@ def cargar_registros():
 # Formulario para registrar entrada
 # -------------------------------
 with st.form("form_entrada"):
-    placa = st.text_input("Placa", key="placa")
-    tipo = st.selectbox("Tipo de Vehículo", ["Carro", "Moto"], key="tipo")
-    usuario = st.text_input("Usuario", key="usuario")
+    placa = st.text_input("Placa")
+    tipo = st.selectbox("Tipo de Vehículo", ["Carro", "Moto"])
+    usuario = st.text_input("Usuario")
     submit = st.form_submit_button("Registrar Entrada")
 
     if submit:
         if placa and usuario:
-            # Registrar vehículo
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            
-            # Reiniciar campos
-            st.session_state.placa = ""
-            st.session_state.tipo = "Carro"  # O lo que quieras como valor predeterminado
-            st.session_state.usuario = ""
-
-            # Actualizar la tabla
-            st.session_state.updated = True
         else:
             st.warning("Por favor, complete todos los campos.")
 
