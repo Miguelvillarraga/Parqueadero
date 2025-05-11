@@ -8,7 +8,8 @@ class Registro:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT Vehiculo.Placa, Vehiculo.Tipo, Vehiculo.Usuario, Registro.Fecha_Entrada, Registro.Hora_Entrada, Registro.Fecha_Salida, Registro.Hora_Salida
+            SELECT Registro.ID_Registro, Vehiculo.Placa, Vehiculo.Tipo, Vehiculo.Usuario, 
+                   Registro.Fecha_Entrada, Registro.Hora_Entrada, Registro.Fecha_Salida, Registro.Hora_Salida
             FROM Registro
             JOIN Vehiculo ON Registro.Placa_Vehiculo = Vehiculo.Placa
             ORDER BY Registro.Hora_Entrada DESC
@@ -17,16 +18,18 @@ class Registro:
         conn.close()
         return [
             {
-                'placa': row[0],
-                'tipo': row[1],
-                'usuario': row[2],
-                'fecha_entrada': row[3],
-                'hora_entrada': row[4],
-                'fecha_salida': row[5],
-                'hora_salida': row[6]
+                'id': row[0],  # ID_Registro
+                'placa': row[1],
+                'tipo': row[2],
+                'usuario': row[3],
+                'fecha_entrada': row[4],
+                'hora_entrada': row[5],
+                'fecha_salida': row[6],
+                'hora_salida': row[7]
             }
             for row in rows
         ]
+
 
     @staticmethod
     def registrar_salida(id_registro):
