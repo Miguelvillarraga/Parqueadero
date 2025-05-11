@@ -1,7 +1,7 @@
 import streamlit as st
 from Database.Models.Vehiculo import Vehiculo
 from Database.Models.Registro import Registro
-from Database.setup import crear_tablas
+from Database import setup
 
 
 crear_tablas()
