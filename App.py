@@ -7,18 +7,15 @@ import datetime
 
 # Crear tablas si no existen
 crear_tablas()
-st.title("Gestión de Parqueadero")
+st.title("Gestión de Parqueadero Colombia")
 
-# -------------------------------
 # Cargar registros desde la base de datos
-# -------------------------------
 def cargar_registros():
-    registros = Registro.obtener_todos()  # Obtener registros actualizados
+    registros = Registro.obtener_todos()
     return registros
 
-# -------------------------------
+
 # Validar formato de placa
-# -------------------------------
 def validar_placa(placa, tipo):
     # Eliminar espacios y convertir a mayúsculas
     placa = placa.replace(" ", "").upper()
@@ -28,17 +25,15 @@ def validar_placa(placa, tipo):
         # Placa para carro: tres letras seguidas de tres números (ABC 123)
         patron = r"^[A-Z]{3}\d{3}$"
     elif tipo == "Moto":
-        # Placa para moto: tres letras, dos números y una letra al final (ABC 12 A)
+        # Placa para moto: tres letras, dos números y una letra al final (ABC 12A)
         patron = r"^[A-Z]{3}\d{2}[A-Z]{1}$"
     else:
-        return False  # Tipo de vehículo no válido
+        return False
 
     # Validar la placa con el patrón
     return bool(re.match(patron, placa))
 
-# -------------------------------
 # Formulario para registrar entrada
-# -------------------------------
 with st.form("form_entrada"):
     placa = st.text_input("Placa", key="placa_input")
     tipo = st.selectbox("Tipo de Vehículo", ["Carro", "Moto"])
@@ -64,9 +59,7 @@ with st.form("form_entrada"):
         else:
             st.warning("Por favor, complete todos los campos.")
 
-# -------------------------------
 # Mostrar registros actuales
-# -------------------------------
 st.subheader("Registros de Vehículos")
 
 # Cargar los registros y mostrarlos en la tabla
@@ -120,7 +113,7 @@ registros = cargar_registros()  # Cargamos los registros al inicio
 mostrar_tabla(registros)
 
 # Actualizar la tabla después de cada acción
-if st.session_state.get('updated', False):  # Verificar si se actualizó el estado
-    registros = cargar_registros()  # Recargar los registros
+if st.session_state.get('updated', False):
+    registros = cargar_registros()
     mostrar_tabla(registros)
-    st.session_state.updated = False  # Resetear el flag
+    st.session_state.updated = False
