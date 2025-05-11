@@ -24,7 +24,9 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            st.experimental_rerun()
+            # Usamos st.session_state para marcar que debe actualizarse
+            st.session_state['actualizar'] = True
+            st.experimental_rerun()  # Reintenta desde el inicio
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -33,7 +35,11 @@ with st.form("form_entrada"):
 # -------------------------------
 st.subheader("Registros de Vehículos")
 
-registros = Registro.obtener_todos()  # Debe incluir: id, placa, tipo, hora_entrada, hora_salida
+# Comprobamos si se necesita actualizar
+if 'actualizar' in st.session_state and st.session_state['actualizar']:
+    registros = Registro.obtener_todos()  # Debe incluir: id, placa, tipo, hora_entrada, hora_salida
+else:
+    registros = []
 
 # Cabeceras de tabla
 cab1, cab2, cab3, cab4, cab5, cab6 = st.columns([2, 2, 2, 2, 2, 1])
@@ -68,8 +74,9 @@ for reg in registros:
         if col5.button("Registrar salida", key=f"salida_{reg['id']}"):
             Registro.registrar_salida(reg['id'])
             st.success(f"Salida registrada para {reg['placa']}")
+            # Marcamos que se debe actualizar la tabla
             st.session_state['actualizar'] = True
-            st.stop()  # Detiene ejecución y reinicia desde arriba (seguro)
+            st.experimental_rerun()  # Reintenta desde el inicio
     else:
         col5.write("✅")
 
@@ -77,4 +84,6 @@ for reg in registros:
     if col6.button("🗑️", key=f"eliminar_{reg['id']}"):
         Registro.eliminar_registro(reg['id'])
         st.warning(f"Registro de {reg['placa']} eliminado.")
-        st.experimental_rerun()
+        # Marcamos que se debe actualizar la tabla
+        st.session_state['actualizar'] = True
+        st.experimental_rerun()  # Reintenta desde el inicio
