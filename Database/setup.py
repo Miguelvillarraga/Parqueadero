@@ -15,7 +15,7 @@ def crear_tablas():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Registro (
         ID_Registro INTEGER PRIMARY KEY AUTOINCREMENT,
-        Placa_Vehiculo TEXT NOT NULL,
+        Placa_Vehiculo TEXT NOT NULL UNIQUE,
         Fecha_Entrada DATE NOT NULL,
         Hora_Entrada TIME NOT NULL,
         Fecha_Salida DATE,
