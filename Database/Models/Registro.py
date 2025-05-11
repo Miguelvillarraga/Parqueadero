@@ -7,7 +7,12 @@ class Registro:
     def obtener_todos():
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, placa, tipo, usuario, hora_entrada, hora_salida FROM Vehiculo ORDER BY hora_entrada DESC")
+        cursor.execute("""
+            SELECT Registro.id, Vehiculo.Placa, Vehiculo.Tipo, Vehiculo.Usuario, Registro.HoraEntrada, Registro.HoraSalida
+            FROM Registro
+            JOIN Vehiculo ON Registro.VehiculoID = Vehiculo.id
+            ORDER BY Registro.HoraEntrada DESC
+        """)
         rows = cursor.fetchall()
         conn.close()
         return [
@@ -21,6 +26,7 @@ class Registro:
             }
             for row in rows
         ]
+
 
     @staticmethod
     def registrar_salida(id_registro):
