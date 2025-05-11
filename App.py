@@ -8,10 +8,6 @@ import datetime
 crear_tablas()
 st.title("Gestión de Parqueadero")
 
-# Limpiar estado de actualización
-if 'actualizar' in st.session_state:
-    del st.session_state['actualizar']
-
 # -------------------------------
 # Formulario para registrar entrada
 # -------------------------------
@@ -26,8 +22,7 @@ with st.form("form_entrada"):
             v = Vehiculo(placa, tipo, usuario)
             v.registrar_entrada()
             st.success("Entrada registrada exitosamente.")
-            st.session_state['actualizar'] = True
-            st.stop()
+            st.experimental_rerun()  # Reinicia para mostrar en tabla
         else:
             st.warning("Por favor, complete todos los campos.")
 
@@ -51,7 +46,6 @@ cab6.markdown("**Eliminar**")
 for reg in registros:
     col1, col2, col3, col4, col5, col6 = st.columns([2, 2, 2, 2, 2, 1])
 
-    # Acceder con .get para evitar KeyError
     placa = reg.get('placa', 'N/A')
     tipo = reg.get('tipo', 'N/A')
     hora_entrada = reg.get('hora_entrada', 'N/A')
@@ -67,8 +61,7 @@ for reg in registros:
         if col5.button("Registrar salida", key=f"salida_{reg.get('id')}"):
             Registro.registrar_salida(reg.get('id'))
             st.success(f"Salida registrada para {placa}")
-            st.session_state['actualizar'] = True
-            st.stop()
+            st.experimental_rerun()  # Ahora sí se actualiza la tabla
     else:
         col5.write("✅")
 
@@ -76,5 +69,4 @@ for reg in registros:
     if col6.button("🗑️", key=f"eliminar_{reg.get('id')}"):
         Registro.eliminar_registro(reg.get('id'))
         st.warning(f"Registro de {placa} eliminado.")
-        st.session_state['actualizar'] = True
-        st.stop()
+        st.experimental_rerun()
