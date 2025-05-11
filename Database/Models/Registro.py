@@ -8,21 +8,20 @@ class Registro:
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT Registro.id, Vehiculo.Placa, Vehiculo.Tipo, Vehiculo.Usuario, Registro.HoraEntrada, Registro.HoraSalida
+            SELECT Vehiculo.Placa, Vehiculo.Tipo, Vehiculo.Usuario, Registro.HoraEntrada, Registro.HoraSalida
             FROM Registro
-            JOIN Vehiculo ON Registro.VehiculoID = Vehiculo.id
+            JOIN Vehiculo ON Registro.Placa = Vehiculo.Placa
             ORDER BY Registro.HoraEntrada DESC
         """)
         rows = cursor.fetchall()
         conn.close()
         return [
             {
-                'id': row[0],
-                'placa': row[1],
-                'tipo': row[2],
-                'usuario': row[3],
-                'hora_entrada': row[4],
-                'hora_salida': row[5]
+                'placa': row[0],
+                'tipo': row[1],
+                'usuario': row[2],
+                'hora_entrada': row[3],
+                'hora_salida': row[4]
             }
             for row in rows
         ]
